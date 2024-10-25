@@ -114,7 +114,8 @@ internal class Program
                 factory.SetConnections(_repSystemUserCollection.CollectionInUse(new Guid(userId)), new Guid(userId));
                 factory.Authenticate(new Guid(userId));
 
-                return Results.Ok();
+                var ret = factory.Search(new Guid(userId));
+                return Results.Ok(ret);
             }
             catch (Exception ex)
             {
