@@ -45,7 +45,7 @@ namespace PipelinesTeste2.MicrosoftDevops.Conecting
         {
             CollectionView collection = new()
             {
-                Id = new Guid("bc03cd0c-9641-4847-9160-3b30f56e69dd"),
+                Id = new Guid("3c66cd3b-dab4-46a5-9dea-218ef7dcf207"),
                 Name = "Comércio",
                 Projects = []
             };

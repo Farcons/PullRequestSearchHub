@@ -15,9 +15,18 @@ internal class Program
         builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
         new DBBuilderBase().ModelCreating(builder);
         builder.Services.AddScoped<IServLoggin, ServLoggin>();
-
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowAll",
+                policy =>
+                {
+                    policy.AllowAnyOrigin()
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+        });
         var app = builder.Build();
-
+        app.UseCors("AllowAll");
         var factory = new ConnectionFabric();
 
         app.MapGet("/loggin", async (IServLoggin _servLoggin, IRepSystemUserCollection _repSystemUserCollection, HttpRequest request) =>
@@ -94,6 +103,7 @@ internal class Program
                 {
                     var userId = collections.FirstOrDefault().UserId;
                     factory.SetConnections(_repSystemUserCollection.CollectionInUse(userId), userId);
+                    factory.Authenticate(userId);
                 }
 
                 return Results.Ok();
