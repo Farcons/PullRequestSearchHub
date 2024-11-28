@@ -1,5 +1,5 @@
 ﻿
-namespace PipelinesTeste2.MicrosoftDevops.LogginBase
+namespace PipelineSearchHub.MicrosoftDevops.LogginBase
 {
     public interface IServLoggin
     {

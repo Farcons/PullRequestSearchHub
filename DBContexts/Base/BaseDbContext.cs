@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PipelinesTeste2.DBContexts.SystemCollections;
-using PipelinesTeste2.DBContexts.SystemUsers;
+using PipelineSearchHub.DBContexts.SystemCollections;
+using PipelineSearchHub.DBContexts.SystemUsers;
 using System.Linq.Expressions;
 
-namespace PipelinesTeste2.DBContexts.Base
+namespace PipelineSearchHub.DBContexts.Base
 {
     public class BaseDbContext<TEntity> : IBaseDbContext<TEntity> where TEntity : SystemBaseIdentifier
     {

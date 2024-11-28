@@ -1,6 +1,6 @@
-﻿using PipelinesTeste2.DBContexts.Base;
+﻿using PipelineSearchHub.DBContexts.Base;
 
-namespace PipelinesTeste2.DBContexts.SystemCollections.Collections
+namespace PipelineSearchHub.DBContexts.SystemCollections.Collections
 {
     public class SystemCollection : SystemBaseIdentifier
     {

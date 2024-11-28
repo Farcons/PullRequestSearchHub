@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PipelinesTeste2.DBContexts.Base;
-using PipelinesTeste2.DBContexts.SystemCollections;
-using PipelinesTeste2.DBContexts.SystemUsers;
+using PipelineSearchHub.DBContexts.Base;
+using PipelineSearchHub.DBContexts.SystemCollections;
+using PipelineSearchHub.DBContexts.SystemUsers;
 
-namespace PipelinesTeste2.DBContexts
+namespace PipelineSearchHub.DBContexts
 {
     public class DBBuilderBase
     {

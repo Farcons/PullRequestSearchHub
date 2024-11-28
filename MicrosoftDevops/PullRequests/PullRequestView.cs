@@ -1,4 +1,7 @@
-﻿namespace PipelinesTeste2.MicrosoftDevops.PullRequests
+﻿using Microsoft.VisualStudio.Services.ExternalEvent;
+using System;
+
+namespace PipelineSearchHub.MicrosoftDevops.PullRequests
 {
     public class PullRequestView
     {
@@ -7,5 +10,6 @@
         public string OwnerName { get; set; }
         public string Url { get; set; }
         public string RepositoryName { get; set; }
+        public DateTime CreationDate { get; set; }
     }
 }

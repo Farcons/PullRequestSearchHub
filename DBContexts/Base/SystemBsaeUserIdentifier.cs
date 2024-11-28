@@ -1,4 +1,4 @@
-﻿namespace PipelinesTeste2.DBContexts.Base
+﻿namespace PipelineSearchHub.DBContexts.Base
 {
     public class SystemBsaeUserIdentifier : SystemBaseIdentifier
     {

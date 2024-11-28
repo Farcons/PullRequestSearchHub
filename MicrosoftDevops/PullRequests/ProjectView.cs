@@ -1,4 +1,4 @@
-﻿namespace PipelinesTeste2.MicrosoftDevops.PullRequests
+﻿namespace PipelineSearchHub.MicrosoftDevops.PullRequests
 {
     public class ProjectView
     {

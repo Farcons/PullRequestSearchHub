@@ -1,15 +1,18 @@
-using PipelinesTeste2.DBContexts;
-using PipelinesTeste2.DBContexts.SystemCollections;
-using PipelinesTeste2.DBContexts.SystemCollections.Collections.Views;
-using PipelinesTeste2.DBContexts.SystemCollections.Views;
-using PipelinesTeste2.MicrosoftDevops.Conecting.Fabrics;
-using PipelinesTeste2.MicrosoftDevops.LogginBase;
+using PipelineSearchHub.MicrosoftDevops.LogginBase;
+using PipelineSearchHub.DBContexts;
+using PipelineSearchHub.DBContexts.SystemCollections;
+using PipelineSearchHub.DBContexts.SystemCollections.Collections.Views;
+using PipelineSearchHub.DBContexts.SystemCollections.Views;
+using PipelineSearchHub.MicrosoftDevops.Conecting.Fabrics;
 
 internal class Program
 {
     private static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
 
         builder.Services.AddMemoryCache();
         builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
@@ -32,15 +35,15 @@ internal class Program
         app.MapGet("/loggin", async (IServLoggin _servLoggin, IRepSystemUserCollection _repSystemUserCollection, HttpRequest request) =>
         {
             if (!request.Headers.TryGetValue("username", out var username) ||
-                !request.Headers.TryGetValue("password", out var password) ||
-                username.ToString().Trim() == string.Empty || password.ToString().Trim() == string.Empty)
+                !request.Headers.TryGetValue("token", out var token) ||
+                username.ToString().Trim() == string.Empty || token.ToString().Trim() == string.Empty)
             {
-                return Results.BadRequest("Usuario e senha são necessários e não podem estar vazios.");
+                return Results.BadRequest("Usuario e token são necessários e não podem estar vazios.");
             }
 
             try
             {
-                var userId = _servLoggin.LogginBase(username, password);
+                var userId = _servLoggin.LogginBase(username, token);
                 var collections = _repSystemUserCollection.CollectionInUse(userId);
                 factory.SetConnections(collections, userId);
 
@@ -133,6 +136,8 @@ internal class Program
             }
         });
 
+        app.UseSwagger();
+        app.UseSwaggerUI();
         app.Run();
     }
 }

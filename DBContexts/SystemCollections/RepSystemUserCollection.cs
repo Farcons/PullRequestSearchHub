@@ -1,8 +1,8 @@
-﻿using PipelinesTeste2.DBContexts.Base;
-using PipelinesTeste2.DBContexts.SystemCollections.Collections.PipelinesTeste2.DBContexts.SystemCollections.Collections;
-using PipelinesTeste2.DBContexts.SystemCollections.Views;
+﻿using PipelineSearchHub.DBContexts.Base;
+using PipelineSearchHub.DBContexts.SystemCollections.Collections.PipelineSearchHub.DBContexts.SystemCollections.Collections;
+using PipelineSearchHub.DBContexts.SystemCollections.Views;
 
-namespace PipelinesTeste2.DBContexts.SystemCollections
+namespace PipelineSearchHub.DBContexts.SystemCollections
 {
     public class RepSystemUserCollection(AppDbContext dbContext) : BaseDbContext<SystemUserCollection>(dbContext), IRepSystemUserCollection
     {

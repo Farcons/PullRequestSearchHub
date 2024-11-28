@@ -1,6 +1,6 @@
-﻿namespace PipelinesTeste2.DBContexts.SystemCollections.Collections
+﻿namespace PipelineSearchHub.DBContexts.SystemCollections.Collections
 {
-    namespace PipelinesTeste2.DBContexts.SystemCollections.Collections
+    namespace PipelineSearchHub.DBContexts.SystemCollections.Collections
     {
         public static class SystemCollectionInUse
         {

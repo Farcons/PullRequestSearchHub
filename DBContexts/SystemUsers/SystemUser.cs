@@ -1,6 +1,6 @@
-﻿using PipelinesTeste2.DBContexts.Base;
+﻿using PipelineSearchHub.DBContexts.Base;
 
-namespace PipelinesTeste2.DBContexts.SystemUsers
+namespace PipelineSearchHub.DBContexts.SystemUsers
 {
     public class SystemUser : SystemBaseIdentifier
     {

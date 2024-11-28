@@ -1,8 +1,8 @@
 ﻿
-using PipelinesTeste2.DBContexts.Base;
-using PipelinesTeste2.DBContexts.SystemCollections.Views;
+using PipelineSearchHub.DBContexts.Base;
+using PipelineSearchHub.DBContexts.SystemCollections.Views;
 
-namespace PipelinesTeste2.DBContexts.SystemCollections
+namespace PipelineSearchHub.DBContexts.SystemCollections
 {
     public interface IRepSystemUserCollection : IBaseDbContext<SystemUserCollection>
     {

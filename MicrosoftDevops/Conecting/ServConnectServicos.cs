@@ -1,40 +1,23 @@
-﻿using Microsoft.TeamFoundation.Core.WebApi;
-using Microsoft.TeamFoundation.SourceControl.WebApi;
-using Microsoft.VisualStudio.Services.Common;
-using Microsoft.VisualStudio.Services.WebApi;
-using PipelinesTeste2.DBContexts.SystemCollections.Collections.Views;
-using PipelinesTeste2.MicrosoftDevops.LogginBase;
-using PipelinesTeste2.MicrosoftDevops.PullRequests;
+﻿using PipelineSearchHub.MicrosoftDevops.Conecting.DevOpsHelpper;
+using PipelineSearchHub.MicrosoftDevops.Conecting.DevOpsHelpper.Dtos;
+using PipelineSearchHub.DBContexts.SystemCollections.Collections.Views;
+using PipelineSearchHub.MicrosoftDevops.PullRequests;
 
-namespace PipelinesTeste2.MicrosoftDevops.Conecting
+namespace PipelineSearchHub.MicrosoftDevops.Conecting
 {
-    public class ServConnectServicos : IConnect
+    public class ServConnectServicos() : IConnect
     {
-        private GitHttpClient gitClient;
-        private ProjectHttpClient projectClient;
-        private List<GitRepository> repositoryList;
-        private IPagedList<TeamProjectReference> projects;
-        private readonly string _urlBase = $"{LoggedUsers.BaseUrl}/Serviços";
-
-        private readonly GitPullRequestSearchCriteria searchCriteria = new() { Status = PullRequestStatus.Active, TargetRefName = "refs/heads/Teste" };
+        #region Ctor
+        private readonly string collectionName = "Serviços";
+        private List<Project> projects = [];
+        private readonly string _baseUrl = "https://devops.useall.com.br";
+        #endregion
 
         public void Connect(Guid userId)
         {
-            var credentials = LoggedUsers.FindByUserId(userId);
-
             try
             {
-                var connection = new VssConnection(new Uri(_urlBase), credentials);
-
-                gitClient = connection.GetClient<GitHttpClient>();
-                projectClient = connection.GetClient<ProjectHttpClient>();
-
-                projects = projectClient.GetProjects().Result;
-                repositoryList = gitClient.GetRepositoriesAsync().Result;
-            }
-            catch (VssUnauthorizedException)
-            {
-                throw new UnauthorizedAccessException("Erro de autenticação! As credenciais utilizadas não tem permissão para o DevOps do sistema de Serviços.");
+                projects = ServDevOpsHellper.Instance.Projects(collectionName, userId).Result;
             }
             catch (Exception ex)
             {
@@ -42,7 +25,7 @@ namespace PipelinesTeste2.MicrosoftDevops.Conecting
             }
         }
 
-        public CollectionView List()
+        public CollectionView List(Guid userId)
         {
             CollectionView collection = new()
             {
@@ -53,7 +36,8 @@ namespace PipelinesTeste2.MicrosoftDevops.Conecting
 
             foreach (var project in projects)
             {
-                var pullRequest = gitClient.GetPullRequestsByProjectAsync(project.Id, searchCriteria).Result;
+                var pullRequest = ServDevOpsHellper.Instance.PullRequests(collectionName, project.Id, userId).Result;
+                pullRequest = pullRequest.Where(pr => pr.Reviewers.Any(reviewer => reviewer.Vote != 10)).ToList();
 
                 if (pullRequest.Count == 0)
                     continue;
@@ -62,24 +46,24 @@ namespace PipelinesTeste2.MicrosoftDevops.Conecting
                 {
                     Id = project.Id,
                     Name = project.Name,
-                    PullRequests = pullRequest.Where(pr => pr.Reviewers.Any(reviewer => reviewer.Vote != 10))
-                                  .Select(pr => new PullRequestView
-                                  {
-                                      Id = pr.PullRequestId,
-                                      Name = pr.Title,
-                                      OwnerName = pr.CreatedBy.DisplayName,
-                                      RepositoryName = pr.Repository.Name,
-                                      Url = RemakeUrl(pr.Url)
-                                  }).ToList()
+                    PullRequests = pullRequest.Select(pr => new PullRequestView
+                    {
+                        Id = pr.PullRequestId,
+                        Name = pr.Title,
+                        CreationDate = pr.CreationDate,
+                        OwnerName = pr.CreatedBy.DisplayName,
+                        RepositoryName = pr.Repository.Name,
+                        Url = RemakeUrl(pr)
+                    }).ToList()
                 });
             };
 
             return collection;
         }
 
-        private string RemakeUrl(string url)
+        private string RemakeUrl(PullRequest dto)
         {
-            var urlParts = url.Split('/');
+            var urlParts = dto.Url.Split('/');
             var newUrl = string.Empty;
 
             string projectGuid = urlParts[4];
@@ -88,15 +72,13 @@ namespace PipelinesTeste2.MicrosoftDevops.Conecting
 
             var project = projects.FirstOrDefault(t => t.Id.ToString().Equals(projectGuid, StringComparison.OrdinalIgnoreCase));
 
-            var repository = repositoryList.FirstOrDefault(r => r.Id.ToString().Equals(repoGuid, StringComparison.OrdinalIgnoreCase));
-
-            if (project != null && repository != null)
+            if (project != null && dto.Repository != null)
             {
-                newUrl = $"{_urlBase}/{project.Name}/_git/{repository.Name}/pullrequest/{pullRequestId}";
+                newUrl = $"{_baseUrl}/{collectionName}/{project.Name}/_git/{dto.Repository.Name}/pullrequest/{pullRequestId}";
             }
             else
             {
-                throw new Exception("Projeto ou repositório não encontrado.");
+                newUrl = "Url não encontrada";
             }
 
             return newUrl;

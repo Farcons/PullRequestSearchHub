@@ -3,11 +3,11 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using PipelinesTeste2.DBContexts.Base;
+using PipelineSearchHub.DBContexts.Base;
 
 #nullable disable
 
-namespace PipelinesTeste2.Migrations
+namespace PipelineSearchHub.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     partial class AppDbContextModelSnapshot : ModelSnapshot
@@ -17,7 +17,7 @@ namespace PipelinesTeste2.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.10");
 
-            modelBuilder.Entity("PipelinesTeste2.DBContexts.SystemCollections.SystemUserCollection", b =>
+            modelBuilder.Entity("PipelineSearchHub.DBContexts.SystemCollections.SystemUserCollection", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -37,7 +37,7 @@ namespace PipelinesTeste2.Migrations
                     b.ToTable("SystemUserCollections");
                 });
 
-            modelBuilder.Entity("PipelinesTeste2.DBContexts.SystemUsers.SystemUser", b =>
+            modelBuilder.Entity("PipelineSearchHub.DBContexts.SystemUsers.SystemUser", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()

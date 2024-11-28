@@ -1,4 +1,4 @@
-﻿namespace PipelinesTeste2.DBContexts.SystemCollections.Views
+﻿namespace PipelineSearchHub.DBContexts.SystemCollections.Views
 {
     public class SystemUserCollectionView
     {

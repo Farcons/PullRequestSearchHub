@@ -1,6 +1,6 @@
-﻿using PipelinesTeste2.MicrosoftDevops.PullRequests;
+﻿using PipelineSearchHub.MicrosoftDevops.PullRequests;
 
-namespace PipelinesTeste2.DBContexts.SystemCollections.Collections.Views
+namespace PipelineSearchHub.DBContexts.SystemCollections.Collections.Views
 {
     public class CollectionView
     {

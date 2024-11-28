@@ -1,10 +1,10 @@
-﻿using PipelinesTeste2.DBContexts.SystemCollections;
-using PipelinesTeste2.DBContexts.SystemCollections.Collections.PipelinesTeste2.DBContexts.SystemCollections.Collections;
-using PipelinesTeste2.DBContexts.SystemCollections.Collections.Views;
+﻿using PipelineSearchHub.DBContexts.SystemCollections;
+using PipelineSearchHub.DBContexts.SystemCollections.Collections.PipelineSearchHub.DBContexts.SystemCollections.Collections;
+using PipelineSearchHub.DBContexts.SystemCollections.Collections.Views;
 
-namespace PipelinesTeste2.MicrosoftDevops.Conecting.Fabrics
+namespace PipelineSearchHub.MicrosoftDevops.Conecting.Fabrics
 {
-    public class ConnectionFabric : IDisposable
+    public class ConnectionFabric() : IDisposable
     {
         private bool _disposed = false;
 
@@ -49,7 +49,7 @@ namespace PipelinesTeste2.MicrosoftDevops.Conecting.Fabrics
 
             ConnectionsForUser(userId).ForEach(c =>
             {
-                ret.Add(c.List());
+                ret.Add(c.List(userId));
             });
 
             return ret;
