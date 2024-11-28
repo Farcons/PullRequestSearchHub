@@ -27,6 +27,12 @@ namespace PipelineSearchHub.MicrosoftDevops.Conecting.Fabrics
                     case "Comércio":
                         connect.Add(new ServConnectComercio());
                         break;
+                    case "M2":
+                        connect.Add(new ServConnectM2());
+                        break;
+                    case "PCP M2":
+                        connect.Add(new ServConnectPCPM2());
+                        break;
                     default:
                         throw new Exception($"Collection {c.Name} não configurada no sistema");
                 }
