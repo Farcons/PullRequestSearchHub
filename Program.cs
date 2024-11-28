@@ -74,7 +74,7 @@ internal class Program
             }
         });
 
-        app.MapGet("/collectionsForUse", (HttpRequest request, IRepSystemUserCollection _repSystemUserCollection) =>
+        app.MapGet("/collectionsInUse", (HttpRequest request, IRepSystemUserCollection _repSystemUserCollection) =>
         {
             if (!request.Headers.TryGetValue("userId", out var userId))
                 return Results.BadRequest("Código do usuario não encontrado no cabeçalho da requisição.");
@@ -91,7 +91,7 @@ internal class Program
             }
         });
 
-        app.MapPut("/collectionsForUse", (HttpRequest request, IRepSystemUserCollection _repSystemUserCollection) =>
+        app.MapPost("/collectionsForUse", (HttpRequest request, IRepSystemUserCollection _repSystemUserCollection) =>
         {
             var collectionsRequest = request.ReadFromJsonAsync<BffSystemUserCollectionView>().Result;
 
