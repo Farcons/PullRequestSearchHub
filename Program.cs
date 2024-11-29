@@ -4,6 +4,8 @@ using PipelineSearchHub.DBContexts.SystemCollections;
 using PipelineSearchHub.DBContexts.SystemCollections.Collections.Views;
 using PipelineSearchHub.DBContexts.SystemCollections.Views;
 using PipelineSearchHub.MicrosoftDevops.Conecting.Fabrics;
+using PipelineSearchHub.DBContexts.Base;
+using Microsoft.EntityFrameworkCore;
 
 internal class Program
 {
@@ -17,6 +19,7 @@ internal class Program
         builder.Services.AddMemoryCache();
         builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
         new DBBuilderBase().ModelCreating(builder);
+
         builder.Services.AddScoped<IServLoggin, ServLoggin>();
         builder.Services.AddCors(options =>
         {
@@ -29,6 +32,13 @@ internal class Program
                 });
         });
         var app = builder.Build();
+
+        using (var scope = app.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            db.Database.Migrate();
+        }
+
         app.UseCors("AllowAll");
         var factory = new ConnectionFabric();
 
