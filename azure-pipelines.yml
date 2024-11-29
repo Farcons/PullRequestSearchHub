@@ -3,6 +3,9 @@ trigger:
 
 pool:
   vmImage: 'windows-latest'
+  name: 'MyAgentPool'  # Nome do pool que contém o agente
+  demands:
+    - agent.name -equals MySpecificAgent  # Nome do agente específico
 
 variables:
   buildConfiguration: 'Release'
