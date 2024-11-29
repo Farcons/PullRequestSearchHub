@@ -5,7 +5,7 @@ pool:
   vmImage: 'windows-latest'
   name: 'AgentePersonalizacao'  # Nome do pool que contém o agente
   demands:
-    - agent.name -equals MySpecificAgent  # Nome do agente específico
+    - agent.name -equals vinicius.baranzelli  # Nome do agente específico
 
 variables:
   buildConfiguration: 'Release'
