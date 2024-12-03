@@ -1,6 +1,5 @@
 ﻿using PipelineSearchHub.DBContexts.SystemCollections;
 using PipelineSearchHub.DBContexts.SystemUsers;
-using PipelineSearchHub.MicrosoftDevops.LogginBase;
 
 namespace PipelineSearchHub.MicrosoftDevops.LogginBase
 {
@@ -12,7 +11,7 @@ namespace PipelineSearchHub.MicrosoftDevops.LogginBase
         public Guid LogginBase(string username, string token)
         {
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(token))
-                throw new ArgumentException("Usuario e token devem ser informados.");
+                throw new ArgumentException("Erro400 Usuario e token devem ser informados.");
 
             var user = _repSystemUser.FindWithUsername(username) ?? _repSystemUser.CreateWithUsername(username);
             _repSystemUserCollection.AtualizeCollecionsForUser(user.Id);

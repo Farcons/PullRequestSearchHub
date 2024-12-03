@@ -15,14 +15,7 @@ namespace PipelineSearchHub.MicrosoftDevops.Conecting
 
         public void Connect(Guid userId)
         {
-            try
-            {
-                projects = ServDevOpsHellper.Instance.Projects(collectionName, userId).Result;
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("Erro ao conectar: " + ex.Message, ex);
-            }
+            projects = ServDevOpsHellper.Instance.Projects(collectionName, userId).Result;
         }
 
         public CollectionView List(Guid userId)

@@ -34,7 +34,7 @@ namespace PipelineSearchHub.MicrosoftDevops.Conecting.Fabrics
                         connect.Add(new ServConnectPCPM2());
                         break;
                     default:
-                        throw new Exception($"Collection {c.Name} não configurada no sistema");
+                        throw new Exception($"Erro400 Collection {c.Name} não configurada no sistema");
                 }
             });
 
@@ -43,7 +43,9 @@ namespace PipelineSearchHub.MicrosoftDevops.Conecting.Fabrics
 
         public void Authenticate(Guid userId)
         {
-            ConnectionsForUser(userId).ForEach(c =>
+            var connections = ConnectionsForUser(userId) ?? throw new Exception($"Erro401 Collections para uso não definidas! Atualize suas collections em 'Opções'");
+
+            connections.ForEach(c =>
             {
                 c.Connect(userId);
             });
@@ -53,10 +55,13 @@ namespace PipelineSearchHub.MicrosoftDevops.Conecting.Fabrics
         {
             var ret = new List<CollectionView>();
 
-            ConnectionsForUser(userId).ForEach(c =>
+            var connections = ConnectionsForUser(userId) ?? throw new Exception($"Erro401 Collections para uso não definidas! Atualize suas collections em 'Opções'");
+
+            foreach (var c in connections)
             {
                 ret.Add(c.List(userId));
-            });
+
+            };
 
             return ret;
         }

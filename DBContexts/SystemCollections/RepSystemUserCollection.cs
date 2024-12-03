@@ -48,7 +48,7 @@ namespace PipelineSearchHub.DBContexts.SystemCollections
         public void AtualizeCollecionsForUser(Guid userId)
         {
             if (userId == Guid.Empty)
-                throw new ArgumentException("Código de usuario deve ser informado", nameof(userId));
+                throw new ArgumentException("Erro400 Código de usuario deve ser informado", nameof(userId));
 
             var userCollections = UserCollections(userId)
                 .Select(q => q.CollectionId)

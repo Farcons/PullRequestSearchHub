@@ -6,6 +6,8 @@ using PipelineSearchHub.DBContexts.SystemCollections.Views;
 using PipelineSearchHub.MicrosoftDevops.Conecting.Fabrics;
 using PipelineSearchHub.DBContexts.Base;
 using Microsoft.EntityFrameworkCore;
+using PipelineSearchHub.ExceptionsFilters;
+using Microsoft.AspNetCore.Diagnostics;
 
 internal class Program
 {
@@ -33,6 +35,8 @@ internal class Program
         });
         var app = builder.Build();
 
+        app.UseMiddleware<GlobalExceptionHandler>();
+
         using (var scope = app.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -51,18 +55,13 @@ internal class Program
                 return Results.BadRequest("Usuario e token são necessários e não podem estar vazios.");
             }
 
-            try
-            {
-                var userId = _servLoggin.LogginBase(username, token);
-                var collections = _repSystemUserCollection.CollectionInUse(userId);
-                factory.SetConnections(collections, userId);
+            var userId = _servLoggin.LogginBase(username, token);
+            var collections = _repSystemUserCollection.CollectionInUse(userId);
+            factory.SetConnections(collections, userId);
+            factory.Authenticate(userId);
 
-                return Results.Ok(new { UserId = userId });
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Erro ao fazer login: {ex.Message}");
-            }
+            return Results.Ok(new { UserId = userId });
+
         });
 
         app.MapGet("/pullrequests", (HttpRequest request) =>
@@ -70,18 +69,12 @@ internal class Program
             if (!request.Headers.TryGetValue("userId", out var userId))
                 return Results.BadRequest("Código do usuario não encontrado no cabeçalho da requisição.");
 
-            try
-            {
-                List<CollectionView> ret = [];
+            List<CollectionView> ret = [];
 
-                ret = factory.Search(new Guid(userId));
+            ret = factory.Search(new Guid(userId));
 
-                return Results.Ok(ret);
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Erro ao obter pull requests: {ex.Message}");
-            }
+            return Results.Ok(ret);
+
         });
 
         app.MapGet("/collectionsInUse", (HttpRequest request, IRepSystemUserCollection _repSystemUserCollection) =>
@@ -89,16 +82,10 @@ internal class Program
             if (!request.Headers.TryGetValue("userId", out var userId))
                 return Results.BadRequest("Código do usuario não encontrado no cabeçalho da requisição.");
 
-            try
-            {
-                var ret = _repSystemUserCollection.BffUserCollections(new Guid(userId));
+            var ret = _repSystemUserCollection.BffUserCollections(new Guid(userId));
 
-                return Results.Ok(ret);
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Erro ao obter collections do usuario: {ex.Message}");
-            }
+            return Results.Ok(ret);
+
         });
 
         app.MapPost("/collectionsForUse", (HttpRequest request, IRepSystemUserCollection _repSystemUserCollection) =>
@@ -108,23 +95,17 @@ internal class Program
             if (collectionsRequest == null || !collectionsRequest.Collections.Any())
                 return Results.BadRequest("Como não foi encontrado dados de atualização, nada foi efetuado.");
 
-            try
-            {
-                var collections = _repSystemUserCollection.AtualizeUserCollections(collectionsRequest.Collections);
+            var collections = _repSystemUserCollection.AtualizeUserCollections(collectionsRequest.Collections);
 
-                if (collections.Count != 0)
-                {
-                    var userId = collections.FirstOrDefault().UserId;
-                    factory.SetConnections(_repSystemUserCollection.CollectionInUse(userId), userId);
-                    factory.Authenticate(userId);
-                }
-
-                return Results.Ok();
-            }
-            catch (Exception ex)
+            if (collections.Count != 0)
             {
-                return Results.Problem($"Erro ao atualizar collections do usuario: {ex.Message}");
+                var userId = collections.FirstOrDefault().UserId;
+                factory.SetConnections(_repSystemUserCollection.CollectionInUse(userId), userId);
+                factory.Authenticate(userId);
             }
+
+            return Results.Ok();
+
         });
 
         app.MapPost("/atualizeConnections", (HttpRequest request, IRepSystemUserCollection _repSystemUserCollection) =>
@@ -132,18 +113,11 @@ internal class Program
             if (!request.Headers.TryGetValue("userId", out var userId))
                 return Results.BadRequest("Código do usuario não encontrado no cabeçalho da requisição.");
 
-            try
-            {
-                factory.SetConnections(_repSystemUserCollection.CollectionInUse(new Guid(userId)), new Guid(userId));
-                factory.Authenticate(new Guid(userId));
+            factory.SetConnections(_repSystemUserCollection.CollectionInUse(new Guid(userId)), new Guid(userId));
+            factory.Authenticate(new Guid(userId));
 
-                var ret = factory.Search(new Guid(userId));
-                return Results.Ok(ret);
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem($"Erro ao atualizar collections do usuario: {ex.Message}");
-            }
+            var ret = factory.Search(new Guid(userId));
+            return Results.Ok(ret);
         });
 
         app.UseSwagger();

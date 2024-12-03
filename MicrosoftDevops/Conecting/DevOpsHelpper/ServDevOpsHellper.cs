@@ -1,15 +1,14 @@
-﻿using Microsoft.VisualStudio.Services.Common;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
 using PipelineSearchHub.MicrosoftDevops.Conecting.DevOpsHelpper.Dtos;
 using PipelineSearchHub.MicrosoftDevops.LogginBase;
+using System.Net;
 using System.Text;
 
 namespace PipelineSearchHub.MicrosoftDevops.Conecting.DevOpsHelpper
 {
     public sealed class ServDevOpsHellper
     {
-        private static readonly Lazy<ServDevOpsHellper> lazy = new Lazy<ServDevOpsHellper> (() => new ServDevOpsHellper());
+        private static readonly Lazy<ServDevOpsHellper> lazy = new Lazy<ServDevOpsHellper>(() => new ServDevOpsHellper());
         public static ServDevOpsHellper Instance => lazy.Value;
 
         private readonly string baseUrl = "https://devops.useall.com.br";
@@ -19,34 +18,31 @@ namespace PipelineSearchHub.MicrosoftDevops.Conecting.DevOpsHelpper
             var authToken = LoggedUsers.FindByUserId(userId);
             var apiUrl = $"{baseUrl}/{collectionName}/{projectId}/_apis/git/repositories?api-version=6.1-preview.1";
 
-            try
+            using HttpClient client = new() { BaseAddress = new Uri("https://devops.useall.com.br/") };
+
+            var encodedToken = Convert.ToBase64String(Encoding.UTF8.GetBytes($"\"\":{authToken}"));
+            client.DefaultRequestHeaders.Add("Authorization", $"Basic {encodedToken}");
+
+            HttpResponseMessage response = await client.GetAsync(apiUrl);
+
+            if (response.IsSuccessStatusCode)
             {
-                using HttpClient client = new() { BaseAddress = new Uri("https://devops.useall.com.br/") };
+                var jsonResponse = await response.Content.ReadAsStringAsync();
 
-                var encodedToken = Convert.ToBase64String(Encoding.UTF8.GetBytes($"\"\":{authToken}"));
-                client.DefaultRequestHeaders.Add("Authorization", $"Basic {encodedToken}");
-
-                HttpResponseMessage response = await client.GetAsync(apiUrl);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonResponse = await response.Content.ReadAsStringAsync();
-
-                    var repositories = JsonConvert.DeserializeObject<DevopsResponse<Repository>>(jsonResponse);
-                    return repositories?.Value ?? [];
-                }
-                else
-                {
-                    throw new Exception($"Erro ao tentar recuperar os repositórios do sistema. Erro: {response.ReasonPhrase}");
-                }
+                var repositories = JsonConvert.DeserializeObject<DevopsResponse<Repository>>(jsonResponse);
+                return repositories?.Value ?? [];
             }
-            catch (VssUnauthorizedException)
+            else
             {
-                throw new UnauthorizedAccessException("Erro de autenticação! As credenciais utilizadas não tem permissão para o DevOps.");
-            }
-            catch (Exception e)
-            {
-                throw new Exception(e.Message);
+                throw response.StatusCode switch
+                {
+                    HttpStatusCode.BadRequest => new ArgumentException($"Erro400 Requisição inválida ao tentar recuperar os repositórios do sistema. {Environment.NewLine}Verifique os parâmetros enviados."),
+                    HttpStatusCode.Unauthorized => new UnauthorizedAccessException($"Erro401 Acesso não autorizado ao tentar recuperar os repositórios do sistema. {Environment.NewLine}Verifique suas credenciais."),
+                    HttpStatusCode.Forbidden => new UnauthorizedAccessException($"Erro403 Permissão negada para acessar os repositórios do sistema."),
+                    HttpStatusCode.NotFound => new KeyNotFoundException($"Erro404 Endereço de acesso aos repositórios não foi encontrado."),
+                    HttpStatusCode.InternalServerError => new InvalidOperationException("Erro500 Erro interno no servidor. Tente novamente mais tarde."),
+                    _ => new Exception($"Erro500 Erro ao tentar recuperar os repositórios do sistema. Erro: {response.ReasonPhrase} (StatusCode: {(int)response.StatusCode})"),
+                };
             }
         }
 
@@ -55,33 +51,30 @@ namespace PipelineSearchHub.MicrosoftDevops.Conecting.DevOpsHelpper
             var authToken = LoggedUsers.FindByUserId(userId);
             var apiUrl = $"{baseUrl}/{collectionName}/_apis/projects?api-version=6.1-preview.1";
 
-            try
+            using HttpClient client = new() { BaseAddress = new Uri("https://devops.useall.com.br/") };
+            var encodedToken = Convert.ToBase64String(Encoding.UTF8.GetBytes($"\"\":{authToken}"));
+            client.DefaultRequestHeaders.Add("Authorization", $"Basic {encodedToken}");
+
+            HttpResponseMessage response = await client.GetAsync(apiUrl);
+
+            if (response.IsSuccessStatusCode)
             {
-                using HttpClient client = new() { BaseAddress = new Uri("https://devops.useall.com.br/") };
-                var encodedToken = Convert.ToBase64String(Encoding.UTF8.GetBytes($"\"\":{authToken}"));
-                client.DefaultRequestHeaders.Add("Authorization", $"Basic {encodedToken}");
+                var jsonResponse = await response.Content.ReadAsStringAsync();
 
-                HttpResponseMessage response = await client.GetAsync(apiUrl);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonResponse = await response.Content.ReadAsStringAsync();
-
-                    var projects = JsonConvert.DeserializeObject<DevopsResponse<Project>>(jsonResponse);
-                    return projects?.Value ?? [];
-                }
-                else
-                {
-                    throw new Exception($"Erro ao tentar recuperar os projetos do sistema. Erro: {response.ReasonPhrase}");
-                }
+                var projects = JsonConvert.DeserializeObject<DevopsResponse<Project>>(jsonResponse);
+                return projects?.Value ?? [];
             }
-            catch (VssUnauthorizedException)
+            else
             {
-                throw new UnauthorizedAccessException("Erro de autenticação! As credenciais utilizadas não tem permissão para o DevOps.");
-            }
-            catch (Exception e)
-            {
-                throw new Exception(e.Message);
+                throw response.StatusCode switch
+                {
+                    HttpStatusCode.BadRequest => new ArgumentException($"Erro400 Requisição inválida ao tentar recuperar os projetos do sistema. {Environment.NewLine}Verifique os parâmetros enviados."),
+                    HttpStatusCode.Unauthorized => new UnauthorizedAccessException($"Erro401 Acesso não autorizado ao tentar recuperar os projetos do sistema. {Environment.NewLine}Verifique suas credenciais."),
+                    HttpStatusCode.Forbidden => new UnauthorizedAccessException($"Erro403 Permissão negada para acessar os projetos do sistema."),
+                    HttpStatusCode.NotFound => new KeyNotFoundException($"Erro404 Endereço de acesso aos projetos não foi encontrado."),
+                    HttpStatusCode.InternalServerError => new InvalidOperationException("Erro500 Erro interno no servidor. Tente novamente mais tarde."),
+                    _ => new Exception($"Erro500 Erro ao tentar recuperar os projetos do sistema. Erro: {response.ReasonPhrase} (StatusCode: {(int)response.StatusCode})"),
+                };
             }
         }
 
@@ -90,34 +83,31 @@ namespace PipelineSearchHub.MicrosoftDevops.Conecting.DevOpsHelpper
             var authToken = LoggedUsers.FindByUserId(userId);
             var apiUrl = $"{baseUrl}/{collectionName}/{projectId}/_apis/git/pullrequests?api-version=6.1-preview.1&targetRefName=refs/heads/Teste&status=active";
 
-            try
+            using HttpClient client = new() { BaseAddress = new Uri("https://devops.useall.com.br/") };
+
+            var encodedToken = Convert.ToBase64String(Encoding.UTF8.GetBytes($"\"\":{authToken}"));
+            client.DefaultRequestHeaders.Add("Authorization", $"Basic {encodedToken}");
+
+            HttpResponseMessage response = await client.GetAsync(apiUrl);
+
+            if (response.IsSuccessStatusCode)
             {
-                using HttpClient client = new() { BaseAddress = new Uri("https://devops.useall.com.br/") };
+                var jsonResponse = await response.Content.ReadAsStringAsync();
 
-                var encodedToken = Convert.ToBase64String(Encoding.UTF8.GetBytes($"\"\":{authToken}"));
-                client.DefaultRequestHeaders.Add("Authorization", $"Basic {encodedToken}");
-
-                HttpResponseMessage response = await client.GetAsync(apiUrl);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonResponse = await response.Content.ReadAsStringAsync();
-
-                    var pullRequests = JsonConvert.DeserializeObject<DevopsResponse<PullRequest>>(jsonResponse);
-                    return pullRequests?.Value ?? [];
-                }
-                else
-                {
-                    throw new Exception($"Erro ao tentar recuperar as pull requests do sistema. Erro: {response.ReasonPhrase}");
-                }
+                var pullRequests = JsonConvert.DeserializeObject<DevopsResponse<PullRequest>>(jsonResponse);
+                return pullRequests?.Value ?? [];
             }
-            catch (VssUnauthorizedException)
+            else
             {
-                throw new UnauthorizedAccessException("Erro de autenticação! As credenciais utilizadas não tem permissão para o DevOps.");
-            }
-            catch (Exception e)
-            {
-                throw new Exception(e.Message);
+                throw response.StatusCode switch
+                {
+                    HttpStatusCode.BadRequest => new ArgumentException($"Erro400 Requisição inválida ao tentar recuperar as pull request's do sistema. {Environment.NewLine}Verifique os parâmetros enviados."),
+                    HttpStatusCode.Unauthorized => new UnauthorizedAccessException($"Erro401 Acesso não autorizado ao tentar recuperar as pull request's do sistema. {Environment.NewLine}Verifique suas credenciais."),
+                    HttpStatusCode.Forbidden => new UnauthorizedAccessException($"Erro403 Permissão negada para acessar as pull request's do sistema."),
+                    HttpStatusCode.NotFound => new KeyNotFoundException($"Erro404 Endereço de acesso aas pull request's não foi encontrado."),
+                    HttpStatusCode.InternalServerError => new InvalidOperationException("Erro500 Erro interno no servidor. Tente novamente mais tarde."),
+                    _ => new Exception($"Erro500 Erro ao tentar recuperar as pull request's do sistema. Erro: {response.ReasonPhrase} (StatusCode: {(int)response.StatusCode})"),
+                };
             }
         }
     }
