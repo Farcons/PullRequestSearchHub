@@ -8,7 +8,7 @@
         {
             var ret = RegisteredUsers.FirstOrDefault(p => p.Key == userId).Value;
 
-            return ret ?? throw new UnauthorizedAccessException("Erro de autenticação! Não foi identificado credenciais. Faça o Loggin novamente!");
+            return ret ?? throw new UnauthorizedAccessException("Erro401 Erro de autenticação! Não foi identificado credenciais. Faça o Loggin novamente!");
         }
 
     }
