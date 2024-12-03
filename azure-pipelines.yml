@@ -1,5 +1,7 @@
 trigger:
-- main
+  branches:
+    include:
+      - main
 
 pool:
   vmImage: 'windows-latest'
@@ -9,6 +11,7 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
+
 
 steps:
 - task: UseDotNet@2
