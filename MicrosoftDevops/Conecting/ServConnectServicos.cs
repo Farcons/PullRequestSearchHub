@@ -18,7 +18,7 @@ namespace PipelineSearchHub.MicrosoftDevops.Conecting
             projects = ServDevOpsHellper.Instance.Projects(collectionName, userId).Result;
         }
 
-        public CollectionView List(Guid userId)
+        public async Task<CollectionView> ListAsync(Guid userId)
         {
             CollectionView collection = new()
             {
@@ -27,29 +27,50 @@ namespace PipelineSearchHub.MicrosoftDevops.Conecting
                 Projects = []
             };
 
-            foreach (var project in projects)
+            var tasks = projects.Select(async project =>
             {
-                var pullRequest = ServDevOpsHellper.Instance.PullRequests(collectionName, project.Id, userId).Result;
-                pullRequest = pullRequest.Where(pr => pr.Reviewers.Any(reviewer => reviewer.Vote != 10)).ToList();
+                var pullRequests = await ServDevOpsHellper.Instance.PullRequests(collectionName, project.Id, userId);
+                pullRequests = pullRequests.Where(pr => pr.Reviewers.Any(reviewer => reviewer.Vote != 10)).ToList();
 
-                if (pullRequest.Count == 0)
-                    continue;
-
-                collection.Projects.Add(new ProjectView
+                if (pullRequests.Count > 0)
                 {
-                    Id = project.Id,
-                    Name = project.Name,
-                    PullRequests = pullRequest.Select(pr => new PullRequestView
+                    var projectView = new ProjectView
                     {
-                        Id = pr.PullRequestId,
-                        Name = pr.Title,
-                        CreationDate = pr.CreationDate,
-                        OwnerName = pr.CreatedBy.DisplayName,
-                        RepositoryName = pr.Repository.Name,
-                        Url = RemakeUrl(pr)
-                    }).ToList()
-                });
-            };
+                        Id = project.Id,
+                        Name = project.Name,
+                        PullRequests = []
+                    };
+
+                    var pullRequestTasks = pullRequests.Select(async pr =>
+                    {
+                        var comments = await ServDevOpsHellper.Instance.PullRequestComments(collectionName, pr.Repository.Id, pr.PullRequestId, userId);
+                        var quantComments = comments.Where(p => !p.IsDeleted &&
+                                                                p.Status == "active" &&
+                                                                p.Comments.Any(q => q.CommentType == "text"))
+                                                    .Count();
+
+
+                        return new PullRequestView
+                        {
+                            Id = pr.PullRequestId,
+                            Name = pr.Title,
+                            CreationDate = pr.CreationDate,
+                            OwnerName = pr.CreatedBy.DisplayName,
+                            RepositoryName = pr.Repository.Name,
+                            Url = RemakeUrl(pr),
+                            QuantComents = quantComments
+                        };
+                    });
+
+                    projectView.PullRequests = [.. (await Task.WhenAll(pullRequestTasks))];
+                    return projectView;
+                }
+
+                return null;
+            });
+
+            var projectViews = (await Task.WhenAll(tasks)).Where(p => p != null).ToList();
+            collection.Projects.AddRange(projectViews);
 
             return collection;
         }
@@ -57,8 +78,6 @@ namespace PipelineSearchHub.MicrosoftDevops.Conecting
         private string RemakeUrl(PullRequest dto)
         {
             var urlParts = dto.Url.Split('/');
-            var newUrl = string.Empty;
-
             string projectGuid = urlParts[4];
             string repoGuid = urlParts[8];
             string pullRequestId = urlParts.Last();
@@ -67,14 +86,33 @@ namespace PipelineSearchHub.MicrosoftDevops.Conecting
 
             if (project != null && dto.Repository != null)
             {
-                newUrl = $"{_baseUrl}/{collectionName}/{project.Name}/_git/{dto.Repository.Name}/pullrequest/{pullRequestId}";
+                return $"{_baseUrl}/{collectionName}/{project.Name}/_git/{dto.Repository.Name}/pullrequest/{pullRequestId}";
             }
-            else
-            {
-                newUrl = "Url não encontrada";
-            }
+            return "Url não encontrada";
+        }
 
-            return newUrl;
+
+        //Pesou de mais
+        private bool WiAvaliableForTest(PullRequest pr, Guid userId)
+        {
+            var ret = true;
+
+            List<WorkItemResponse> linkedWis = ServDevOpsHellper.Instance.PullRequestWis(collectionName, pr.Repository.Id, pr.PullRequestId, userId).Result;
+
+            if (linkedWis == null || linkedWis.Count == 0)
+                return false;
+
+            foreach (var wi in linkedWis)
+            {
+                List<WorkItemDetails> workItemDetails = ServDevOpsHellper.Instance.WorkItemDetails(collectionName, wi.Id, userId).Result;
+
+                if (!workItemDetails.Any(p => p.Fields.SystemState == "Avaliable for test"))
+                {
+                    ret = false;
+                    break;
+                }
+            }
+            return ret;
         }
     }
 }

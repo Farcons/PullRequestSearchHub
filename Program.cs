@@ -90,7 +90,7 @@ internal class Program
 
         app.MapPost("/collectionsForUse", (HttpRequest request, IRepSystemUserCollection _repSystemUserCollection) =>
         {
-            var collectionsRequest = request.ReadFromJsonAsync<BffSystemUserCollectionView>().Result;
+            BffSystemUserCollectionView? collectionsRequest = request.ReadFromJsonAsync<BffSystemUserCollectionView>().Result;
 
             if (collectionsRequest == null || !collectionsRequest.Collections.Any())
                 return Results.BadRequest("Como não foi encontrado dados de atualização, nada foi efetuado.");
