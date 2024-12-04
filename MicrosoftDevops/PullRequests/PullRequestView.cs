@@ -1,7 +1,4 @@
-﻿using Microsoft.VisualStudio.Services.ExternalEvent;
-using System;
-
-namespace PipelineSearchHub.MicrosoftDevops.PullRequests
+﻿namespace PipelineSearchHub.MicrosoftDevops.PullRequests
 {
     public class PullRequestView
     {
@@ -11,5 +8,7 @@ namespace PipelineSearchHub.MicrosoftDevops.PullRequests
         public string Url { get; set; }
         public string RepositoryName { get; set; }
         public DateTime CreationDate { get; set; }
+        public int QuantComents { get; set; }
+
     }
 }

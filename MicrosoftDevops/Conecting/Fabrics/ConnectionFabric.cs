@@ -43,7 +43,8 @@ namespace PipelineSearchHub.MicrosoftDevops.Conecting.Fabrics
 
         public void Authenticate(Guid userId)
         {
-            var connections = ConnectionsForUser(userId) ?? throw new Exception($"Erro401 Collections para uso não definidas! Atualize suas collections em 'Opções'");
+            var connections = ConnectionsForUser(userId) ??
+                throw new Exception($"Erro401 Collections para uso não definidas! Atualize suas collections em 'Opções'");
 
             connections.ForEach(c =>
             {
@@ -55,15 +56,20 @@ namespace PipelineSearchHub.MicrosoftDevops.Conecting.Fabrics
         {
             var ret = new List<CollectionView>();
 
-            var connections = ConnectionsForUser(userId) ?? throw new Exception($"Erro401 Collections para uso não definidas! Atualize suas collections em 'Opções'");
+            var connections = ConnectionsForUser(userId) ??
+                throw new Exception($"Erro401 Collections para uso não definidas! Atualize suas collections em 'Opções'");
 
             foreach (var c in connections)
             {
-                ret.Add(c.List(userId));
-
+                ret.Add(GetCollectionSynchronously(() => c.ListAsync(userId)));
             };
 
             return ret;
+        }
+
+        private T GetCollectionSynchronously<T>(Func<Task<T>> asyncFunc)
+        {
+            return asyncFunc().GetAwaiter().GetResult();
         }
 
         protected virtual void Dispose(bool disposing)

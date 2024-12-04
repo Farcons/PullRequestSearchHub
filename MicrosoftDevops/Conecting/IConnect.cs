@@ -5,6 +5,6 @@ namespace PipelineSearchHub.MicrosoftDevops.Conecting
     public interface IConnect
     {
         void Connect(Guid userId);
-        CollectionView List(Guid userId);
+        Task<CollectionView> ListAsync(Guid userId);
     }
 }
